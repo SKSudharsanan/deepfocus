@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT name, category, short_summary, description, status, current_stage, start_at, end_est_at\n         FROM tasks WHERE id = ?1",
+  "describe": {
+    "columns": [
+      {
+        "name": "name",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "category",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "short_summary",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "description",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "status",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "current_stage",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "start_at",
+        "ordinal": 6,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "end_est_at",
+        "ordinal": 7,
+        "type_info": "Datetime"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "683424430c6e6fca70cd837214e69e98d3a407ee5505abae30236d952b125f69"
+}
