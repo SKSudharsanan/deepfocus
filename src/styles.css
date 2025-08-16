@@ -1,0 +1,28 @@
+:root {
+    --bg: radial-gradient(1200px 800px at 0% 0%, #6b4fff 0%, #0b1020 60%) fixed;
+    --panel: rgba(255, 255, 255, 0.06);
+    --panel-border: rgba(255, 255, 255, 0.14);
+    --text: #e9eefb;
+    --muted: #a7b0d1;
+    --accent: #7aa2ff;
+  }
+  * { box-sizing: border-box; }
+  html, body, #root { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui; }
+  .app { display: grid; grid-template-columns: 240px 1fr; height: 100%; }
+  .sidebar { padding: 16px; border-right: 1px solid var(--panel-border); background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(12px); }
+  .brand { font-weight: 800; letter-spacing: 0.8px; margin-bottom: 18px; }
+  .nav a { display: block; padding: 8px 10px; border-radius: 10px; color: var(--muted); text-decoration: none; }
+  .nav a.active, .nav a:hover { background: #151c36; color: var(--text); }
+  .main { padding: 20px; overflow: auto; }
+  .card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px; padding: 16px; }
+  .row { display: flex; gap: 10px; align-items: center; }
+  .table { width: 100%; border-collapse: collapse; }
+  .table th, .table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .input, .select, .textarea { background: #0a1128; color: var(--text); border: 1px solid var(--panel-border); border-radius: 10px; padding: 8px 10px; width: 100%; }
+  .button { background: var(--accent); color: #0b1020; border: none; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; }
+  .button.secondary { background: transparent; color: var(--text); border: 1px solid var(--panel-border); }
+  .badge { background: #1b2340; padding: 4px 8px; border-radius: 999px; font-size: 12px; }
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  
