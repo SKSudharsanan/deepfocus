@@ -1,11 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import "./styles.css";
+import "../index.css";
 import { Layout } from "./ui/Layout";
 import { TasksList } from "./ui/tasks/TaskList";
 import { TaskCreate } from "./ui/tasks/TaskCreate";
 import { TaskShow } from "./ui/tasks/TaskShow";
+import { ThemeProvider } from "@/components/theme-provider";
+
 
 const router = createBrowserRouter([
   {
@@ -22,6 +24,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <ThemeProvider defaultTheme="system">
+      <RouterProvider router={router} />
+    </ThemeProvider>
   </React.StrictMode>
 );

@@ -1,78 +1,155 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { api } from "../../api";
 import type { TaskDetail, TaskStatus } from "../../types";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
+const STATUSES: TaskStatus[] = [
+  "todo",
+  "started",
+  "in-progress",
+  "stage-complete",
+  "completed",
+  "dropped",
+];
+
+function fmt(v?: string | null) {
+  if (!v) return "—";
+  try { return new Date(v).toLocaleString(); } catch { return v; }
+}
+
 export function TaskShow() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const nav = useNavigate();
   const [task, setTask] = useState<TaskDetail | null>(null);
   const [reason, setReason] = useState("");
-  const [status, setStatus] = useState<TaskStatus | "">("");
 
   useEffect(() => {
     if (!id) return;
-    api.getTask(id).then(t => { setTask(t); setStatus(t.status); }).catch(console.error);
+    api.getTask(id).then(setTask).catch(console.error);
   }, [id]);
 
-  if (!task) return <div>Loading…</div>;
+  const completionPct = useMemo(() => {
+    if (!task) return "";
+    // naive %: completed -> 100, dropped -> 0, others -> blank
+    if (task.status === "completed") return "100%";
+    return "";
+  }, [task]);
 
-  async function saveStatus() {
-    if (!id || !status) return;
-    await api.setTaskStatus(id, status as TaskStatus);
-    const updated = await api.getTask(id);
-    setTask(updated);
+  async function changeStatus(next: TaskStatus) {
+    if (!task) return;
+    await api.setTaskStatus(task.id, next);
+    setTask(await api.getTask(task.id));
   }
 
-  async function saveReason() {
-    if (!id || !status || !reason.trim()) return;
-    await api.addReason(id, status as TaskStatus, reason.trim());
+  async function addReason() {
+    if (!task || !reason.trim()) return;
+    await api.addReason(task.id, task.status, reason.trim());
     setReason("");
+    // optional: refresh task detail if you show a reasons list
   }
+
+  if (!task) return <div className="text-sm text-muted-foreground">Loading…</div>;
 
   return (
-    <div className="col" style={{ gap: 12 }}>
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <h2>{task.name}</h2>
-        <div className="row">
-          <span className="badge">{task.category}</span>
-          <select className="select" style={{ marginLeft: 8 }} value={status || task.status} onChange={e => setStatus(e.target.value as TaskStatus)}>
-            {(["todo","started","in-progress","stage-complete","completed","dropped"] as TaskStatus[]).map(s => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-          <button className="button" style={{ marginLeft: 8 }} onClick={saveStatus}>Update Status</button>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-semibold">{task.name}</h2>
+          <Badge variant="outline">{task.category}</Badge>
+        </div>
+        <div className="flex gap-2">
+          <Button asChild variant="secondary"><Link to="/tasks">Back</Link></Button>
+          {/* If you later add an edit flow */}
+          {/* <Button>Edit</Button> */}
         </div>
       </div>
 
-      <div className="grid-2">
-        <div className="card">
-          <div className="label">Short summary</div>
-          <p>{task.short_summary || "—"}</p>
-          <div className="label" style={{ marginTop: 12 }}>Description</div>
-          <div style={{ whiteSpace: "pre-wrap" }}>{task.description || "—"}</div>
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Overview</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {task.short_summary ? (
+            <p className="text-sm text-muted-foreground">{task.short_summary}</p>
+          ) : null}
 
-        <div className="card">
-          <div className="label">Meta</div>
-          <div>Status: {task.status}</div>
-          <div>Current stage: {task.current_stage || "—"}</div>
-          <div>Start: {task.start_at ? new Date(task.start_at).toLocaleString() : "—"}</div>
-          <div>End (est): {task.end_est_at ? new Date(task.end_est_at).toLocaleString() : "—"}</div>
-          <div>Updated: {new Date(task.updated_at).toLocaleString()}</div>
-        </div>
-      </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={task.status} onValueChange={(v: TaskStatus) => changeStatus(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+              <div className="space-y-2">
+              <Label>Current stage</Label>
+              <div className="text-sm">{task.current_stage ?? "—"}</div>
+            </div>
+              <div className="space-y-2">
+              <Label>Completion</Label>
+              <div className="text-sm">{completionPct || "—"}</div>
+            </div>
+          </div>
 
-      <div className="card">
-        <h3>Reasoning</h3>
-        <p className="label">Add reasoning for current status</p>
-        <div className="row">
-          <textarea className="textarea" rows={3} value={reason} onChange={e => setReason(e.target.value)} />
-          <button className="button" onClick={saveReason}>Save Reason</button>
-        </div>
-        <p className="label" style={{ marginTop: 10 }}>
-          (History rendering is backend-dependent—expose a list endpoint when ready.)
-        </p>
-      </div>
+          <Separator />
+
+          <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+              <Label>Start</Label>
+              <div className="text-sm">{fmt(task.start_at)}</div>
+            </div>
+             <div className="space-y-2">
+              <Label>End (est)</Label>
+              <div className="text-sm">{fmt(task.end_est_at)}</div>
+            </div>
+              <div className="space-y-2">
+              <Label>Last updated</Label>
+              <div className="text-sm">{fmt(task.updated_at)}</div>
+            </div>
+          </div>
+
+          {task.description ? (
+            <>
+              <Separator />
+                <div className="space-y-2">
+                <Label>Description</Label>
+                <div className="prose prose-invert mt-1 max-w-none whitespace-pre-wrap text-sm">
+                  {task.description}
+                </div>
+              </div>
+            </>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Reasoning / Notes</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            placeholder={`Why is the status "${task.status}"? Add a note…`}
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            rows={3}
+          />
+          <div className="flex justify-end">
+            <Button variant="secondary" onClick={addReason}>Add Note</Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
