@@ -41,3 +41,74 @@ export type TaskInput = {
   start_at?: string | null;
   end_est_at?: string | null;
 };
+
+export type IdeaStatus =
+  | "inbox"
+  | "exploring"
+  | "building"
+  | "paused"
+  | "shipped"
+  | "dropped";
+
+export type IdeaRow = {
+  id: string;
+  project_id: string;
+  title: string;
+  status: IdeaStatus | string;
+  priority: number;
+  updated_at: string;
+};
+
+export type IdeaDetail = {
+  id: string;
+  project_id: string;
+  title: string;
+  summary?: string | null;
+  status: IdeaStatus | string;
+  priority: number;
+  effort_pts: number;
+  impact_pts: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DocRow = {
+  id: string;
+  project_id: string;
+  title: string;
+  slug?: string | null;
+  status: "draft" | "in_review" | "published" | string;
+  updated_at: string;
+};
+
+export type DocDetail = {
+  id: string;
+  project_id: string;
+  title: string;
+  slug?: string | null;
+  body_md: string;
+  body_html: string;
+  cover_path?: string | null;
+  status: "draft" | "in_review" | "published" | string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProjectOption = {
+  id: string;
+  name: string;
+  description?: string | null;
+  status: string;
+  workspace_id: string;
+  workspace_name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type WorkspaceOption = {
+  id: string;
+  name: string;
+  kind: "personal" | "work" | "custom" | string;
+  created_at: string;
+  updated_at: string;
+};

@@ -1,6 +1,6 @@
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, time::Duration};
 use directories::ProjectDirs;
-use sqlx::{sqlite::{SqlitePoolOptions, SqliteConnectOptions, SqliteJournalMode}, SqlitePool };
+use sqlx::{sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteSynchronous}, SqlitePool };
 
 fn sqlite_path() -> PathBuf {
     // Change org/app names to whatever you like
@@ -19,7 +19,9 @@ pub async fn init_pool() -> SqlitePool {
     let opts = SqliteConnectOptions::new()
         .filename(&path)
         .create_if_missing(true)
-        .journal_mode(SqliteJournalMode::Wal) // nice-to-have
+        .journal_mode(SqliteJournalMode::Wal)
+        .synchronous(SqliteSynchronous::Normal)
+        .busy_timeout(Duration::from_secs(5)) // nice-to-have
         .foreign_keys(true);     
 
     let pool = SqlitePoolOptions::new()
@@ -34,6 +36,9 @@ pub async fn init_pool() -> SqlitePool {
         .run(&pool)
         .await
         .expect("run migrations");
+
+        sqlx::query("PRAGMA optimize;").execute(&pool).await.ok();
+
 
     pool
 }
